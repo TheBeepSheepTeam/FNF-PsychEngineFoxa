@@ -161,6 +161,9 @@ class PlayState extends MusicBeatState
 
 	private var strumLine:FlxSprite;
 
+	// Precision
+	public var precisions:Array<FlxText> = [];
+
 	//Handles the new epic mega sexy cam code that i've done
 	public var camFollow:FlxPoint;
 	public var camFollowPos:FlxObject;
@@ -4147,7 +4150,25 @@ class PlayState extends MusicBeatState
 		comboSpr.y += 60;
 		comboSpr.velocity.x += FlxG.random.int(1, 10) * playbackRate;
 
+		for (i in precisions) remove(i);
+
+		var precision:FlxText = new FlxText(0, (ClientPrefs.downScroll ? playerStrums.members[0].y + 110 : playerStrums.members[0].y - 40), '' + Math.round(Conductor.songPosition - note.strumTime) + ' ms');
+		precision.cameras = [camOther];
+
+		if (ClientPrefs.downScroll) precision.y -= 3;
+		else precision.y += 3;
+
+		precision.x = (playerStrums.members[1].x + playerStrums.members[1].width / 2) - precision.width / 2;
+
+		precision.setFormat(Paths.font("vcr.ttf"), 21, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+
+		FlxTween.tween(precision, {y: (ClientPrefs.downScroll ? precision.y + 3 : precision.y - 3)}, 0.01, {ease: FlxEase.bounceOut});
+		
+
+		precisions.push(precision);
+
 		insert(members.indexOf(strumLineNotes), rating);
+		add(precision);
 		
 		if (!ClientPrefs.comboStacking)
 		{
@@ -4254,6 +4275,10 @@ class PlayState extends MusicBeatState
 		// add(coolText);
 
 		FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {
+			startDelay: Conductor.crochet * 0.001 / playbackRate
+		});
+
+		FlxTween.tween(precision, {alpha: 0}, 0.2 / playbackRate, {
 			startDelay: Conductor.crochet * 0.001 / playbackRate
 		});
 
